@@ -108,6 +108,12 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 .gene-ticks span:first-child { text-align: left; }
 .gene-ticks span:last-child { text-align: right; }
 
+/* 遺伝子ボタン選択（離散的な切り替えであることを明示） */
+.axis-btn-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.axis-btn { flex: 1; min-width: 76px; padding: 9px 6px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: 600 9px/1.2 var(--sans); letter-spacing: 0.02em; text-align: center; cursor: pointer; transition: all 0.12s; }
+.axis-btn:hover { border-color: var(--accent); }
+.axis-btn.active { background: var(--accent); border-color: var(--accent); color: #241d16; }
+
 .checkbox-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .checkbox-row label { font: 500 10px/1 var(--sans); color: var(--ink); cursor: pointer; }
 .checkbox-row input { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; }
@@ -118,7 +124,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 .btn.secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
 
 .footer-links { display: flex; gap: 8px; margin-top: 16px; }
-.footer-links a { flex: 1; padding: 11px 14px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: 500 10px/1 var(--sans); letter-spacing: 0.03em; text-align: center; text-decoration: none; cursor: pointer; }
+.footer-links a { flex: 1; width: 100%; padding: 11px 14px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: 500 10px/1 var(--sans); letter-spacing: 0.03em; text-align: center; text-decoration: none; cursor: pointer; }
 .footer-links a:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Camera Patch グリッド（ショートカット：スライダー群の後ろに配置） ── */
@@ -204,50 +210,53 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 
     <div class="controls">
 
-      <!-- ① 5つの遺伝子スライダー（主役・先頭配置） -->
+      <!-- ① 5つの遺伝子（主役・先頭配置・ボタン選択） -->
       <div class="ctrl-group">
-        <div class="ctrl-label">
-          <span class="name">SENSOR <span class="jp-small">センサー</span></span>
-          <span class="val" id="sensorVal">CCD</span>
+        <div class="ctrl-label"><span class="name">SENSOR <span class="jp-small">センサー</span></span></div>
+        <div class="axis-btn-grid" data-axis="sensor">
+          <button class="axis-btn active" data-value="0">CCD</button>
+          <button class="axis-btn" data-value="1">CMOS</button>
+          <button class="axis-btn" data-value="2">BSI CMOS</button>
         </div>
-        <input type="range" id="sensor" min="0" max="2" step="1" value="0">
-        <div class="gene-ticks"><span>CCD</span><span>CMOS</span><span>BSI CMOS</span></div>
       </div>
 
       <div class="ctrl-group">
-        <div class="ctrl-label">
-          <span class="name">OPTICS <span class="jp-small">レンズ構成</span></span>
-          <span class="val" id="opticsVal">FIXED</span>
+        <div class="ctrl-label"><span class="name">OPTICS <span class="jp-small">レンズ構成</span></span></div>
+        <div class="axis-btn-grid" data-axis="optics">
+          <button class="axis-btn" data-value="0">FIXED</button>
+          <button class="axis-btn active" data-value="1">STANDARD ZOOM</button>
+          <button class="axis-btn" data-value="2">SUPERZOOM</button>
+          <button class="axis-btn" data-value="3">DUAL-LENS</button>
         </div>
-        <input type="range" id="optics" min="0" max="3" step="1" value="1">
-        <div class="gene-ticks"><span>FIXED</span><span>STD ZOOM</span><span>SUPERZOOM</span><span>DUAL-LENS</span></div>
       </div>
 
       <div class="ctrl-group">
-        <div class="ctrl-label">
-          <span class="name">COLOR <span class="jp-small">発色傾向</span></span>
-          <span class="val" id="colorVal">VIVID</span>
+        <div class="ctrl-label"><span class="name">COLOR <span class="jp-small">発色傾向</span></span></div>
+        <div class="axis-btn-grid" data-axis="color">
+          <button class="axis-btn active" data-value="0">VIVID</button>
+          <button class="axis-btn" data-value="1">KODAK COLOR CLASSIC</button>
+          <button class="axis-btn" data-value="2">NATURAL</button>
+          <button class="axis-btn" data-value="3">MODERN</button>
         </div>
-        <input type="range" id="color" min="0" max="3" step="1" value="0">
-        <div class="gene-ticks"><span>VIVID</span><span>KODAK</span><span>NATURAL</span><span>MODERN</span></div>
       </div>
 
       <div class="ctrl-group">
-        <div class="ctrl-label">
-          <span class="name">PROCESSING <span class="jp-small">画像処理</span></span>
-          <span class="val" id="processingVal">EARLY SHARP+NOISE</span>
+        <div class="ctrl-label"><span class="name">PROCESSING <span class="jp-small">画像処理</span></span></div>
+        <div class="axis-btn-grid" data-axis="processing">
+          <button class="axis-btn active" data-value="0">EARLY SHARP+NOISE</button>
+          <button class="axis-btn" data-value="1">REFINED SOFT</button>
+          <button class="axis-btn" data-value="2">MODERN CLEAN</button>
         </div>
-        <input type="range" id="processing" min="0" max="2" step="1" value="0">
-        <div class="gene-ticks"><span>EARLY</span><span>REFINED</span><span>MODERN</span></div>
       </div>
 
       <div class="ctrl-group">
-        <div class="ctrl-label">
-          <span class="name">FORM <span class="jp-small">世代・佇まい</span></span>
-          <span class="val" id="formVal">DIGITAL ORIGIN</span>
+        <div class="ctrl-label"><span class="name">FORM <span class="jp-small">世代・佇まい</span></span></div>
+        <div class="axis-btn-grid" data-axis="form">
+          <button class="axis-btn active" data-value="0">DIGITAL ORIGIN</button>
+          <button class="axis-btn" data-value="1">COMPACT / COLOR</button>
+          <button class="axis-btn" data-value="2">EXPERIMENTAL COMPACT</button>
+          <button class="axis-btn" data-value="3">PIXPRO / NOW</button>
         </div>
-        <input type="range" id="form" min="0" max="3" step="1" value="0">
-        <div class="gene-ticks"><span>ORIGIN</span><span>COMPACT</span><span>EXPERIMENTAL</span><span>PIXPRO</span></div>
       </div>
 
       <div class="section-divider">MICRO ADJUST <span class="jp-small">遺伝子からの微調整（遺伝子を変えるとリセット）</span></div>
@@ -291,17 +300,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
         </div>
       </div>
 
-      <div class="ctrl-group" style="border-bottom:none; padding-bottom: 0;">
-        <div class="action-buttons">
-          <button class="btn" id="downloadBtn" disabled>DOWNLOAD PNG</button>
-          <button class="btn secondary" id="resetBtn" disabled>RESET</button>
-        </div>
-        <div class="footer-links">
-          <a href="https://k-eis.github.io" target="_blank" rel="noopener">k-eis.github.io</a>
-        </div>
-      </div>
-
-      <!-- ② カメラパッチ（ショートカット・後ろに配置） -->
+      <!-- ② カメラパッチ（ショートカット・フッターの直前に配置） -->
       <div class="section-divider">CAMERA PATCH <span class="jp-small">12台のDNA・ショートカット</span></div>
 
       <div class="form-group-label">01 DIGITAL ORIGIN — デジタルのはじまり</div>
@@ -330,6 +329,18 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
         <div class="profile-btn" data-patch="fz45"><span class="profile-name">FZ45</span><span class="profile-desc">BSI / Modern</span></div>
         <div class="profile-btn" data-patch="fz55"><span class="profile-name">FZ55</span><span class="profile-desc">BSI / Modern</span></div>
         <div class="profile-btn" data-patch="c1"><span class="profile-name">C1</span><span class="profile-desc">Fixed / Modern</span></div>
+      </div>
+
+      <!-- ③ フッター（シリーズ標準：SAVE AS PNG＋RESET／PHILOSOPHY・USAGE・LICENSE／ALL FILTERS） -->
+      <div class="ctrl-group" style="border-bottom:none; padding-bottom: 0; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line);">
+        <div class="action-buttons">
+          <button class="btn" id="downloadBtn" disabled>SAVE AS PNG</button>
+          <button class="btn secondary" id="resetBtn" disabled>RESET</button>
+        </div>
+        <div class="footer-links" style="flex-direction: column;">
+          <a href="https://keis01.substack.com/p/k-eis-design-filter-000?r=87bvw8&utm_medium=ios" target="_blank" rel="noopener">PHILOSOPHY • USAGE • LICENSE</a>
+          <a href="https://keis01.substack.com/s/k-eis-design-filter" target="_blank" rel="noopener">ALL FILTERS</a>
+        </div>
       </div>
 
     </div>

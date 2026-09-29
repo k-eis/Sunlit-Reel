@@ -15,17 +15,10 @@ const outputCanvas = document.getElementById('outputCanvas');
 const canvasBadge = document.getElementById('canvasBadge');
 const ctx = outputCanvas.getContext('2d');
 
-const sensorSlider = document.getElementById('sensor');
-const opticsSlider = document.getElementById('optics');
-const colorSlider = document.getElementById('color');
-const processingSlider = document.getElementById('processing');
-const formSlider = document.getElementById('form');
+const axisBtnGroups = document.querySelectorAll('.axis-btn-grid');
 
-const sensorVal = document.getElementById('sensorVal');
-const opticsVal = document.getElementById('opticsVal');
-const colorVal = document.getElementById('colorVal');
-const processingVal = document.getElementById('processingVal');
-const formVal = document.getElementById('formVal');
+// 5つの遺伝子の現在の選択状態（HTML側のactiveボタンの初期値と一致させる）
+const geneSelection = { sensor: 0, optics: 1, color: 0, processing: 0, form: 0 };
 
 const adjContrastSlider = document.getElementById('adjContrast');
 const adjHighlightSlider = document.getElementById('adjHighlight');
@@ -48,15 +41,6 @@ let previewImageData = null;
 let isDragging = false;
 let lastResultImageData = null;
 let compareTimeout1 = null, compareTimeout2 = null;
-
-// ── 5つの遺伝子軸：選択肢の定義（表示ラベル）
-const AXES = {
-  sensor:     ['CCD', 'CMOS', 'BSI CMOS'],
-  optics:     ['FIXED', 'STANDARD ZOOM', 'SUPERZOOM', 'DUAL-LENS'],
-  color:      ['VIVID', 'KODAK COLOR CLASSIC', 'NATURAL', 'MODERN'],
-  processing: ['EARLY SHARP+NOISE', 'REFINED SOFT', 'MODERN CLEAN'],
-  form:       ['DIGITAL ORIGIN', 'COMPACT / COLOR', 'EXPERIMENTAL COMPACT', 'PIXPRO / NOW'],
-};
 
 // ── 各遺伝子・各選択肢が、最終パラメーターにどれだけ影響するか（差分値）
 const SENSOR_DELTA = [
@@ -121,22 +105,10 @@ function computeParams(sel) {
 }
 
 function currentSelection() {
-  return {
-    sensor: +sensorSlider.value,
-    optics: +opticsSlider.value,
-    color: +colorSlider.value,
-    processing: +processingSlider.value,
-    form: +formSlider.value,
-  };
+  return geneSelection;
 }
 
-function refreshLabels() {
-  sensorVal.textContent = AXES.sensor[sensorSlider.value];
-  opticsVal.textContent = AXES.optics[opticsSlider.value];
-  colorVal.textContent = AXES.color[colorSlider.value];
-  processingVal.textContent = AXES.processing[processingSlider.value];
-  formVal.textContent = AXES.form[formSlider.value];
-}
+// ボタン選択なのでラベル表示は不要（アクティブなボタン自体が選択状態を示す）
 
 // ── MICRO ADJUST：遺伝子から計算した基準値を「そこからのズレ」の出発点として同期する。
 // 遺伝子スライダーを動かすたびに呼ばれ、手動で入れた微調整値は上書き（＝リセット）される
@@ -411,20 +383,30 @@ function requestApply() {
   });
 }
 
-[sensorSlider, opticsSlider, colorSlider, processingSlider, formSlider].forEach(slider => {
-  slider.addEventListener('input', () => {
-    refreshLabels();
+// setAxisValueが単独の入り口。ボタンクリックでも、パッチ適用でも必ずここを通す
+function setAxisValue(axis, value, { fromPatch = false } = {}) {
+  geneSelection[axis] = value;
+  const group = document.querySelector(`.axis-btn-grid[data-axis="${axis}"]`);
+  if (group) {
+    group.querySelectorAll('.axis-btn').forEach(b => {
+      b.classList.toggle('active', +b.dataset.value === value);
+    });
+  }
+  if (!fromPatch) {
     syncMicroAdjustFromGenes(); // 遺伝子が変わったらMICRO ADJUSTは新しい基準値にリセット
     patchBtns.forEach(b => b.classList.remove('active'));
     requestApply();
-  });
-  slider.addEventListener('pointerdown', () => { isDragging = true; });
-  window.addEventListener('pointerup', () => {
-    if (isDragging) { isDragging = false; requestApply(); }
+  }
+}
+
+axisBtnGroups.forEach(group => {
+  const axis = group.dataset.axis;
+  group.querySelectorAll('.axis-btn').forEach(btn => {
+    btn.addEventListener('click', () => setAxisValue(axis, +btn.dataset.value));
   });
 });
 
-// MICRO ADJUST側：遺伝子スライダーには触れず、値の上書きだけ行う
+// MICRO ADJUST側：遺伝子ボタンには触れず、値の上書きだけ行う
 [adjContrastSlider, adjHighlightSlider, adjSharpnessSlider, adjGrainSlider].forEach(slider => {
   slider.addEventListener('input', () => {
     refreshMicroAdjustLabels();
@@ -436,10 +418,9 @@ function requestApply() {
   });
 });
 
-refreshLabels();
 syncMicroAdjustFromGenes();
 
-// ── カメラパッチ：5遺伝子スライダーへのショートカット
+// ── カメラパッチ：5つの遺伝子ボタンへのショートカット
 // 実在する12台の「本来の組み合わせ」。あくまで出発点で、そこから自由に組み替えてよい
 const CAMERA_PATCHES = {
   dc4800: { sensor: 0, optics: 1, color: 0, processing: 0, form: 0 },
@@ -463,12 +444,11 @@ patchBtns.forEach(btn => {
     const compareOn = compareModeCheckbox.checked;
     const beforeSnapshot = lastResultImageData;
 
-    sensorSlider.value = p.sensor;
-    opticsSlider.value = p.optics;
-    colorSlider.value = p.color;
-    processingSlider.value = p.processing;
-    formSlider.value = p.form;
-    refreshLabels();
+    setAxisValue('sensor', p.sensor, { fromPatch: true });
+    setAxisValue('optics', p.optics, { fromPatch: true });
+    setAxisValue('color', p.color, { fromPatch: true });
+    setAxisValue('processing', p.processing, { fromPatch: true });
+    setAxisValue('form', p.form, { fromPatch: true });
     syncMicroAdjustFromGenes();
 
     patchBtns.forEach(b => b.classList.remove('active'));
