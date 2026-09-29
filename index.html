@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunlit Reel — k-eis</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  /* Sunlit：陽だまりのフィルムを思わせる、あたたかいクリーム×ゴールド */
+  --bg: #faf3e6;
+  --ink: #2e2620;
+  --line: #e8dcc4;
+  --line-strong: #d4c29c;
+  --accent: #c8963e;
+  --accent2: #dfae5c;
+  --muted: #9c8b6f;
+  --canvas-check-a: #f0e6d0;
+  --canvas-check-b: #faf3e6;
+  --mono: 'Courier New', monospace;
+  --sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── THEME: DARKROOM（現像液の暗い琥珀色） ── */
+body.theme-darkroom {
+  --bg: #241d16;
+  --ink: #f0e6d2;
+  --line: #3a2f23;
+  --line-strong: #594934;
+  --accent: #e0a94a;
+  --accent2: #f0c274;
+  --muted: #8c7b64;
+  --canvas-check-a: #2c241a;
+  --canvas-check-b: #241d16;
+}
+
+html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 40px 32px 80px; }
+
+header { border-bottom: 1px solid var(--line-strong); padding-bottom: 22px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+.filter-tag { font: 600 10px/1 var(--mono); color: var(--accent); letter-spacing: 0.16em; margin-bottom: 10px; }
+h1 { font: 300 32px/1.1 var(--sans); letter-spacing: -0.01em; }
+h1 .jp { font-size: 15px; color: var(--muted); font-weight: 400; margin-left: 10px; }
+.tagline { font: 400 12px/1.6 var(--sans); color: var(--muted); margin-top: 6px; }
+.disclaimer-note { font: 400 9px/1.6 var(--sans); color: var(--muted); margin-top: 10px; max-width: 520px; opacity: 0.75; }
+.version { font: 400 9px/1 var(--mono); color: var(--muted); letter-spacing: 0.1em; text-align: right; }
+
+/* ── テーマ切り替え ── */
+.theme-switcher { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.theme-label { font: 500 9px/1 var(--mono); color: var(--muted); letter-spacing: 0.1em; white-space: nowrap; }
+.theme-options { display: flex; gap: 6px; flex-wrap: wrap; }
+.theme-btn { display: flex; align-items: center; gap: 6px; padding: 6px 10px 6px 6px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: 500 9.5px/1 var(--sans); cursor: pointer; transition: all 0.12s; }
+.theme-btn:hover { border-color: var(--accent); }
+.theme-btn.active { background: var(--accent); border-color: var(--accent); color: #241d16; }
+.theme-btn .swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+/* ── メインレイアウト ── */
+.stage { display: grid; grid-template-columns: 1fr 320px; gap: 0; border: 1px solid var(--line-strong); }
+
+.canvas-area {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+  background:
+    linear-gradient(45deg, var(--canvas-check-a) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--canvas-check-a) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--canvas-check-a) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--canvas-check-a) 75%);
+  background-color: var(--canvas-check-b);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  border-right: 1px solid var(--line-strong);
+  min-height: 480px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+#dropZone { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; cursor: pointer; transition: background 0.15s; }
+#dropZone.drag-over { background: rgba(200,150,62,0.10); }
+#dropZone .icon { width: 40px; height: 40px; border: 1.5px solid var(--line-strong); border-radius: 50%; position: relative; }
+#dropZone .icon::before { content:''; position:absolute; left:50%; top:50%; width:14px; height:14px; border-radius:50%; background: var(--accent); transform: translate(-50%,-50%); opacity:0.6; }
+#dropZone .label-main { font: 500 12px/1 var(--sans); color: var(--ink); text-align: center; }
+#dropZone .label-sub { font: 400 9px/1 var(--mono); color: var(--muted); letter-spacing: 0.08em; }
+#fileInput { display: none; }
+
+canvas#outputCanvas { max-width: 100%; max-height: 640px; display: none; }
+.canvas-badge { position: absolute; top: 14px; left: 14px; font: 500 9px/1 var(--mono); color: #2e2620; background: rgba(250,243,230,0.85); padding: 4px 8px; border: 1px solid rgba(0,0,0,0.1); letter-spacing: 0.08em; display: none; }
+
+/* ── コントロールパネル ── */
+.controls { background: var(--bg); padding: 22px 20px; display: flex; flex-direction: column; gap: 0; }
+.ctrl-group { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.ctrl-group:first-child { padding-top: 0; }
+.ctrl-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.ctrl-label .name { font: 500 10px/1 var(--sans); color: var(--ink); letter-spacing: 0.02em; }
+.ctrl-label .name .jp-small { font-size: 9px; color: var(--muted); margin-left: 4px; }
+.ctrl-label .val { font: 500 10px/1 var(--mono); color: var(--accent); text-align: right; }
+
+input[type="range"] { -webkit-appearance: none; width: 100%; height: 3px; background: var(--line-strong); outline: none; cursor: pointer; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; transition: transform 0.1s; }
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; }
+
+/* 遺伝子スライダー専用：ステップ位置に目盛りを添える */
+.gene-ticks { display: flex; justify-content: space-between; margin-top: 6px; }
+.gene-ticks span { font: 500 8px/1 var(--sans); color: var(--muted); text-align: center; flex: 1; }
+.gene-ticks span:first-child { text-align: left; }
+.gene-ticks span:last-child { text-align: right; }
+
+.checkbox-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.checkbox-row label { font: 500 10px/1 var(--sans); color: var(--ink); cursor: pointer; }
+.checkbox-row input { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; }
+
+.action-buttons { display: flex; gap: 8px; }
+.btn { flex: 1; padding: 12px; border: 1px solid var(--accent); background: var(--accent); color: #241d16; font: 600 11px/1 var(--sans); letter-spacing: 0.04em; cursor: pointer; }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn.secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+
+.footer-links { display: flex; gap: 8px; margin-top: 16px; }
+.footer-links a { flex: 1; padding: 11px 14px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: 500 10px/1 var(--sans); letter-spacing: 0.03em; text-align: center; text-decoration: none; cursor: pointer; }
+.footer-links a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Camera Patch グリッド（ショートカット：スライダー群の後ろに配置） ── */
+.section-divider { font:600 9px/1 var(--mono); color:var(--muted); letter-spacing:0.08em; margin:20px 0 10px; padding-top: 16px; border-top: 1px solid var(--line); }
+.section-divider .jp-small { font-family: var(--sans); margin-left: 6px; }
+.form-group-label { font:600 9px/1 var(--mono); color:var(--muted); letter-spacing:0.08em; margin:14px 0 6px; }
+.profile-grid { display: grid; gap: 6px; }
+.profile-btn { border: 1px solid var(--line-strong); padding: 8px 8px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: all 0.12s; }
+.profile-btn:hover { border-color: var(--accent); }
+.profile-btn.active { background: var(--accent); border-color: var(--accent); }
+.profile-btn.active .profile-name, .profile-btn.active .profile-desc { color: #241d16; }
+.profile-name { font: 600 10.5px/1.2 var(--sans); color: var(--ink); }
+.profile-desc { font: 400 8.5px/1.2 var(--sans); color: var(--muted); margin-top: 2px; }
+
+@media (max-width: 860px) {
+  .wrap { padding: 20px 16px 50px; }
+  header { flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 16px; margin-bottom: 20px; }
+  h1 { font-size: 24px; }
+  h1 .jp { display: block; margin-left: 0; margin-top: 4px; }
+  .stage { grid-template-columns: 1fr; border: none; }
+  .canvas-area {
+    border: 1px solid var(--line-strong);
+    border-bottom: none;
+    min-height: 220px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+  }
+  canvas#outputCanvas { max-height: 42vh; }
+  .controls { border: 1px solid var(--line-strong); border-top: none; padding: 18px 16px; }
+  input[type="range"] { height: 4px; margin: 8px 0; }
+  input[type="range"]::-webkit-slider-thumb { width: 22px; height: 22px; }
+  input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; }
+  .btn { padding: 16px; font-size: 12px; }
+  .footer-links { flex-direction: column; }
+  .profile-grid { grid-template-columns: 1fr 1fr !important; }
+  .profile-btn { padding: 13px 10px; }
+  .profile-name { font-size: 13px; }
+  .profile-desc { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="filter-tag">k-eis DESIGN FILTER 00-β</div>
+      <h1>Sunlit Reel <span class="jp">陽だまりのフィルム</span></h1>
+      <div class="tagline">Decoding twelve Kodak cameras into five genes, then recombining them freely.</div>
+      <div class="tagline" style="margin-top:2px; opacity:0.85;">12台のKodakを5つの遺伝子に分解し、自由に組み替える。</div>
+      <div class="disclaimer-note">These presets are independent interpretations inspired by the characteristics of the cameras mentioned. They are not official products, simulations, or endorsements by the respective manufacturers.<br>これらのプリセットは、言及されているカメラの特徴に着想を得た独自の解釈です。各メーカーの公式製品・シミュレーション・保証ではありません。</div>
+    </div>
+    <div class="version">© 2026 k-eis studio</div>
+  </header>
+
+  <div class="theme-switcher">
+    <span class="theme-label">BODY FINISH <span class="jp-small">着せ替え</span></span>
+    <div class="theme-options">
+      <button class="theme-btn active" data-theme="sunlit">
+        <span class="swatch" style="background:#faf3e6; border:1px solid #c8963e;"></span>
+        Sunlit
+      </button>
+      <button class="theme-btn" data-theme="darkroom">
+        <span class="swatch" style="background:#241d16; border:1px solid #e0a94a;"></span>
+        Darkroom
+      </button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="canvas-area">
+      <div id="dropZone">
+        <div class="icon"></div>
+        <div class="label-main">Drop image, or click to select<br><span style="font-size:10px; opacity:0.6;">画像をドロップ、またはクリックして選択</span></div>
+        <div class="label-sub">PNG / JPEG SUPPORTED</div>
+        <input type="file" id="fileInput" accept="image/*">
+      </div>
+      <div class="canvas-badge" id="canvasBadge">PREVIEW</div>
+      <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <div class="controls">
+
+      <!-- ① 5つの遺伝子スライダー（主役・先頭配置） -->
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">SENSOR <span class="jp-small">センサー</span></span>
+          <span class="val" id="sensorVal">CCD</span>
+        </div>
+        <input type="range" id="sensor" min="0" max="2" step="1" value="0">
+        <div class="gene-ticks"><span>CCD</span><span>CMOS</span><span>BSI CMOS</span></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">OPTICS <span class="jp-small">レンズ構成</span></span>
+          <span class="val" id="opticsVal">FIXED</span>
+        </div>
+        <input type="range" id="optics" min="0" max="3" step="1" value="1">
+        <div class="gene-ticks"><span>FIXED</span><span>STD ZOOM</span><span>SUPERZOOM</span><span>DUAL-LENS</span></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">COLOR <span class="jp-small">発色傾向</span></span>
+          <span class="val" id="colorVal">VIVID</span>
+        </div>
+        <input type="range" id="color" min="0" max="3" step="1" value="0">
+        <div class="gene-ticks"><span>VIVID</span><span>KODAK</span><span>NATURAL</span><span>MODERN</span></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">PROCESSING <span class="jp-small">画像処理</span></span>
+          <span class="val" id="processingVal">EARLY SHARP+NOISE</span>
+        </div>
+        <input type="range" id="processing" min="0" max="2" step="1" value="0">
+        <div class="gene-ticks"><span>EARLY</span><span>REFINED</span><span>MODERN</span></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">FORM <span class="jp-small">世代・佇まい</span></span>
+          <span class="val" id="formVal">DIGITAL ORIGIN</span>
+        </div>
+        <input type="range" id="form" min="0" max="3" step="1" value="0">
+        <div class="gene-ticks"><span>ORIGIN</span><span>COMPACT</span><span>EXPERIMENTAL</span><span>PIXPRO</span></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="checkbox-row">
+          <input type="checkbox" id="compareMode">
+          <label for="compareMode">COMPARE MODE <span style="color:var(--muted); font-size:9px;">切替時にBefore/Afterを表示</span></label>
+        </div>
+      </div>
+
+      <div class="ctrl-group" style="border-bottom:none; padding-bottom: 0;">
+        <div class="action-buttons">
+          <button class="btn" id="downloadBtn" disabled>DOWNLOAD PNG</button>
+          <button class="btn secondary" id="resetBtn" disabled>RESET</button>
+        </div>
+        <div class="footer-links">
+          <a href="https://k-eis.github.io" target="_blank" rel="noopener">k-eis.github.io</a>
+        </div>
+      </div>
+
+      <!-- ② カメラパッチ（ショートカット・後ろに配置） -->
+      <div class="section-divider">CAMERA PATCH <span class="jp-small">12台のDNA・ショートカット</span></div>
+
+      <div class="form-group-label">01 DIGITAL ORIGIN — デジタルのはじまり</div>
+      <div class="profile-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="profile-btn" data-patch="dc4800"><span class="profile-name">DC4800</span><span class="profile-desc">2000 / Standard Zoom</span></div>
+        <div class="profile-btn" data-patch="dx6490"><span class="profile-name">DX6490</span><span class="profile-desc">2003 / Superzoom</span></div>
+        <div class="profile-btn" data-patch="dx7590"><span class="profile-name">DX7590</span><span class="profile-desc">2004 / Superzoom</span></div>
+        <div class="profile-btn" data-patch="p880"><span class="profile-name">P880</span><span class="profile-desc">2005 / Natural</span></div>
+      </div>
+
+      <div class="form-group-label">02 COMPACT / COLOR — コンパクトな色</div>
+      <div class="profile-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="profile-btn" data-patch="ls753"><span class="profile-name">LS753</span><span class="profile-desc">2004 / Vivid</span></div>
+        <div class="profile-btn" data-patch="c875"><span class="profile-name">C875</span><span class="profile-desc">2006 / Vivid</span></div>
+      </div>
+
+      <div class="form-group-label">03 EXPERIMENTAL COMPACT — 実験的なコンパクト</div>
+      <div class="profile-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="profile-btn" data-patch="v570"><span class="profile-name">V570</span><span class="profile-desc">Dual-Lens</span></div>
+        <div class="profile-btn" data-patch="v610"><span class="profile-name">V610</span><span class="profile-desc">Dual-Lens</span></div>
+        <div class="profile-btn" data-patch="v705"><span class="profile-name">V705</span><span class="profile-desc">Dual-Lens</span></div>
+      </div>
+
+      <div class="form-group-label">04 PIXPRO / NOW — いまのKodak</div>
+      <div class="profile-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="profile-btn" data-patch="fz45"><span class="profile-name">FZ45</span><span class="profile-desc">BSI / Modern</span></div>
+        <div class="profile-btn" data-patch="fz55"><span class="profile-name">FZ55</span><span class="profile-desc">BSI / Modern</span></div>
+        <div class="profile-btn" data-patch="c1"><span class="profile-name">C1</span><span class="profile-desc">Fixed / Modern</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="sunlit-reel.js"></script>
+</body>
+</html>
