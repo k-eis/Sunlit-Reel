@@ -1,4 +1,4 @@
-// ── Sunlit Reel エフェクトエンジン（k-eis DESIGN FILTER 00-β・個人用/非公開）
+// ── Sunlit Reel エフェクトエンジン（k-eis DESIGN FILTER 00-γ・個人用/非公開）
 // 「KODAK DNA」リサーチをもとに、12台のKodakカメラを5つの遺伝子に分解:
 // 01 SENSOR     → センサー種別（CCD/CMOS/BSI CMOS）による粒状感・解像感の傾向
 // 02 OPTICS     → レンズ構成（単焦点/標準ズーム/超望遠/2眼）による周辺減光・甘さ
@@ -26,6 +26,15 @@ const opticsVal = document.getElementById('opticsVal');
 const colorVal = document.getElementById('colorVal');
 const processingVal = document.getElementById('processingVal');
 const formVal = document.getElementById('formVal');
+
+const adjContrastSlider = document.getElementById('adjContrast');
+const adjHighlightSlider = document.getElementById('adjHighlight');
+const adjSharpnessSlider = document.getElementById('adjSharpness');
+const adjGrainSlider = document.getElementById('adjGrain');
+const adjContrastVal = document.getElementById('adjContrastVal');
+const adjHighlightVal = document.getElementById('adjHighlightVal');
+const adjSharpnessVal = document.getElementById('adjSharpnessVal');
+const adjGrainVal = document.getElementById('adjGrainVal');
 
 const compareModeCheckbox = document.getElementById('compareMode');
 const downloadBtn = document.getElementById('downloadBtn');
@@ -80,7 +89,7 @@ const FORM_DELTA = [
 ];
 
 const BASE_PARAMS = {
-  saturation: 50, colorTemp: 50, contrast: 0, sharpness: 30,
+  saturation: 50, colorTemp: 50, contrast: 50, sharpness: 30,
   grain: 0, vignette: 0, cornerSoft: 0, highlightRolloff: 20,
   warmGlow: 0, colorPop: 0,
 };
@@ -100,7 +109,7 @@ function computeParams(sel) {
 
   p.saturation = clamp(p.saturation, 0, 100);
   p.colorTemp = clamp(p.colorTemp, 0, 100);
-  p.contrast = clamp(p.contrast, 0, 60);
+  p.contrast = clamp(p.contrast, 0, 100);
   p.sharpness = clamp(p.sharpness, 0, 100);
   p.grain = clamp(p.grain, 0, 100);
   p.vignette = clamp(p.vignette, 0, 100);
@@ -127,6 +136,24 @@ function refreshLabels() {
   colorVal.textContent = AXES.color[colorSlider.value];
   processingVal.textContent = AXES.processing[processingSlider.value];
   formVal.textContent = AXES.form[formSlider.value];
+}
+
+// ── MICRO ADJUST：遺伝子から計算した基準値を「そこからのズレ」の出発点として同期する。
+// 遺伝子スライダーを動かすたびに呼ばれ、手動で入れた微調整値は上書き（＝リセット）される
+function syncMicroAdjustFromGenes() {
+  const base = computeParams(currentSelection());
+  adjContrastSlider.value = base.contrast;
+  adjHighlightSlider.value = base.highlightRolloff;
+  adjSharpnessSlider.value = base.sharpness;
+  adjGrainSlider.value = base.grain;
+  refreshMicroAdjustLabels();
+}
+
+function refreshMicroAdjustLabels() {
+  adjContrastVal.textContent = adjContrastSlider.value;
+  adjHighlightVal.textContent = adjHighlightSlider.value;
+  adjSharpnessVal.textContent = adjSharpnessSlider.value;
+  adjGrainVal.textContent = adjGrainSlider.value;
 }
 
 // ── ファイル読み込み
@@ -239,7 +266,7 @@ function processImage(imageData, params, fast) {
 
   const satFactor = (params.saturation - 50) / 50;   // -1〜+1
   const tempFactor = (params.colorTemp - 50) / 50;   // -1〜+1（負：寒色寄り／正：暖色寄り）
-  const contrastFactor = 1 + params.contrast / 100;   // 1.0〜1.6
+  const contrastFactor = 1 + (params.contrast - 50) / 100; // 0.5〜1.5（50が基準＝変化なし）
   const rolloff = params.highlightRolloff / 100;      // 0〜1
   const colorPop = params.colorPop / 100;             // 0〜0.3
 
@@ -343,6 +370,11 @@ function applySunlitReel(fast) {
   if (!originalImageData) return;
   const sel = currentSelection();
   const params = computeParams(sel);
+  // MICRO ADJUST：手動で動かした4つはここで遺伝子由来の値を上書きする
+  params.contrast = +adjContrastSlider.value;
+  params.highlightRolloff = +adjHighlightSlider.value;
+  params.sharpness = +adjSharpnessSlider.value;
+  params.grain = +adjGrainSlider.value;
   const source = fast ? previewImageData : originalImageData;
   const result = processImage(source, params, fast);
 
@@ -382,6 +414,7 @@ function requestApply() {
 [sensorSlider, opticsSlider, colorSlider, processingSlider, formSlider].forEach(slider => {
   slider.addEventListener('input', () => {
     refreshLabels();
+    syncMicroAdjustFromGenes(); // 遺伝子が変わったらMICRO ADJUSTは新しい基準値にリセット
     patchBtns.forEach(b => b.classList.remove('active'));
     requestApply();
   });
@@ -391,7 +424,20 @@ function requestApply() {
   });
 });
 
+// MICRO ADJUST側：遺伝子スライダーには触れず、値の上書きだけ行う
+[adjContrastSlider, adjHighlightSlider, adjSharpnessSlider, adjGrainSlider].forEach(slider => {
+  slider.addEventListener('input', () => {
+    refreshMicroAdjustLabels();
+    requestApply();
+  });
+  slider.addEventListener('pointerdown', () => { isDragging = true; });
+  window.addEventListener('pointerup', () => {
+    if (isDragging) { isDragging = false; requestApply(); }
+  });
+});
+
 refreshLabels();
+syncMicroAdjustFromGenes();
 
 // ── カメラパッチ：5遺伝子スライダーへのショートカット
 // 実在する12台の「本来の組み合わせ」。あくまで出発点で、そこから自由に組み替えてよい
@@ -423,6 +469,7 @@ patchBtns.forEach(btn => {
     processingSlider.value = p.processing;
     formSlider.value = p.form;
     refreshLabels();
+    syncMicroAdjustFromGenes();
 
     patchBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');

@@ -167,7 +167,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 <div class="wrap">
   <header>
     <div>
-      <div class="filter-tag">k-eis DESIGN FILTER 00-β</div>
+      <div class="filter-tag">k-eis DESIGN FILTER 00-γ</div>
       <h1>Sunlit Reel <span class="jp">陽だまりのフィルム</span></h1>
       <div class="tagline">Decoding twelve Kodak cameras into five genes, then recombining them freely.</div>
       <div class="tagline" style="margin-top:2px; opacity:0.85;">12台のKodakを5つの遺伝子に分解し、自由に組み替える。</div>
@@ -248,6 +248,40 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
         </div>
         <input type="range" id="form" min="0" max="3" step="1" value="0">
         <div class="gene-ticks"><span>ORIGIN</span><span>COMPACT</span><span>EXPERIMENTAL</span><span>PIXPRO</span></div>
+      </div>
+
+      <div class="section-divider">MICRO ADJUST <span class="jp-small">遺伝子からの微調整（遺伝子を変えるとリセット）</span></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">CONTRAST <span class="jp-small">コントラスト</span></span>
+          <span class="val" id="adjContrastVal">50</span>
+        </div>
+        <input type="range" id="adjContrast" min="0" max="100" step="1" value="50">
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">HIGHLIGHT <span class="jp-small">ハイライトの粘り</span></span>
+          <span class="val" id="adjHighlightVal">20</span>
+        </div>
+        <input type="range" id="adjHighlight" min="0" max="100" step="1" value="20">
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">SHARPNESS <span class="jp-small">解像感</span></span>
+          <span class="val" id="adjSharpnessVal">30</span>
+        </div>
+        <input type="range" id="adjSharpness" min="0" max="100" step="1" value="30">
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span class="name">NOISE / NR <span class="jp-small">粒状感</span></span>
+          <span class="val" id="adjGrainVal">0</span>
+        </div>
+        <input type="range" id="adjGrain" min="0" max="100" step="1" value="0">
       </div>
 
       <div class="ctrl-group">
