@@ -437,6 +437,35 @@ const CAMERA_PATCHES = {
   c1:     { sensor: 2, optics: 0, color: 3, processing: 2, form: 3 },
 };
 
+// ── 個体差クイーク：5遺伝子の組み合わせが同じ機種同士でも、その1台固有の
+// 実写観察に基づく小さなクセをMICRO ADJUSTへ上乗せする（B方式）。
+// あくまで「遺伝子は同じでも個体ごとに少しクセがある」という体裁の微補正で、
+// MICRO ADJUST側の値（表示・操作対象）に直接足し込む
+const PATCH_QUIRKS = {
+  dc4800: { sharpness: 8,  grain: 6  },  // 初期機らしい強めのシャープ＋アーティファクト傾向
+  dx6490: { grain: -8,     contrast: 4 },  // 強いノイズリダクションが効いた滑らかさ
+  dx7590: { highlight: 6,  sharpness: -4 }, // 自然な階調、やや柔らかい解像感
+  p880:   { sharpness: 6,  grain: -4 },  // 高精細機らしいクリアさ
+  ls753:  { contrast: 8,   sharpness: 4 },  // 小型CCDらしいパキッとした発色
+  c875:   { contrast: 4,   sharpness: 10, grain: 4 }, // 5倍ズーム機、より鮮やかで強めのシャープ
+  v570:   { highlight: -4, grain: 4  },  // 超広角特有の硬めのハイライト
+  v610:   { contrast: 2 },               // 薄型ズーム機、標準的な個性
+  v705:   { highlight: -8, sharpness: -4 }, // より広角・個性的な光学系
+  fz45:   { grain: -2,     sharpness: 2 }, // AA電池機、素直なモダンさ
+  fz55:   { contrast: 4,   highlight: 4 }, // 薄型ボディ、少し優しいトーン
+  c1:     { contrast: 6,   grain: 2  },  // 固定レンズ機らしい締まった描写
+};
+
+function applyPatchQuirk(patchKey) {
+  const q = PATCH_QUIRKS[patchKey];
+  if (!q) return;
+  if (q.contrast)  adjContrastSlider.value  = clamp(+adjContrastSlider.value  + q.contrast,  0, 100);
+  if (q.highlight) adjHighlightSlider.value = clamp(+adjHighlightSlider.value + q.highlight, 0, 100);
+  if (q.sharpness) adjSharpnessSlider.value = clamp(+adjSharpnessSlider.value + q.sharpness, 0, 100);
+  if (q.grain)      adjGrainSlider.value     = clamp(+adjGrainSlider.value     + q.grain,     0, 100);
+  refreshMicroAdjustLabels();
+}
+
 patchBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     const p = CAMERA_PATCHES[btn.dataset.patch];
@@ -450,6 +479,7 @@ patchBtns.forEach(btn => {
     setAxisValue('processing', p.processing, { fromPatch: true });
     setAxisValue('form', p.form, { fromPatch: true });
     syncMicroAdjustFromGenes();
+    applyPatchQuirk(btn.dataset.patch);
 
     patchBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -483,11 +513,13 @@ patchBtns.forEach(btn => {
   });
 });
 
-// ── テーマ切り替え
+// ── テーマ切り替え（Kodak Retroが既定＝クラス無し、Yellow/Redはbodyにクラス付与）
 themeBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    document.body.classList.remove('theme-sunlit', 'theme-darkroom');
-    document.body.classList.add('theme-' + btn.dataset.theme);
+    document.body.classList.remove('theme-yellow', 'theme-red');
+    if (btn.dataset.theme !== 'retro') {
+      document.body.classList.add('theme-' + btn.dataset.theme);
+    }
     themeBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   });
