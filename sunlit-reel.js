@@ -347,6 +347,9 @@ function applySunlitReel(fast) {
   params.highlightRolloff = +adjHighlightSlider.value;
   params.sharpness = +adjSharpnessSlider.value;
   params.grain = +adjGrainSlider.value;
+  // パッチ固有の色温度・彩度クイーク（MICRO ADJUSTスライダーには出ない、見えない上乗せ）
+  params.colorTemp = clamp(params.colorTemp + patchColorTempQuirk, 0, 100);
+  params.saturation = clamp(params.saturation + patchSaturationQuirk, 0, 100);
   const source = fast ? previewImageData : originalImageData;
   const result = processImage(source, params, fast);
 
@@ -394,6 +397,8 @@ function setAxisValue(axis, value, { fromPatch = false } = {}) {
   }
   if (!fromPatch) {
     syncMicroAdjustFromGenes(); // 遺伝子が変わったらMICRO ADJUSTは新しい基準値にリセット
+    patchColorTempQuirk = 0;
+    patchSaturationQuirk = 0;
     patchBtns.forEach(b => b.classList.remove('active'));
     requestApply();
   }
@@ -451,18 +456,28 @@ const PATCH_QUIRKS = {
   v570:   { highlight: -4, grain: 4  },  // 超広角特有の硬めのハイライト
   v610:   { contrast: 2 },               // 薄型ズーム機、標準的な個性
   v705:   { highlight: -8, sharpness: -4 }, // より広角・個性的な光学系
-  fz45:   { grain: -2,     sharpness: 2 }, // AA電池機、素直なモダンさ
-  fz55:   { contrast: 4,   highlight: 4 }, // 薄型ボディ、少し優しいトーン
-  c1:     { contrast: 6,   grain: 2  },  // 固定レンズ機らしい締まった描写
+  fz45:   { grain: -2,     sharpness: 2 }, // AA電池機、レビューで「正確な色・自然な色」と評される最もニュートラルな個体、色温度クイークなし
+  fz55:   { contrast: 4,   highlight: 4,  colorTemp: 4  }, // 薄型ボディ。FZ45よりレビューで「暖色寄りのレンダリング」と評される
+  c1:     { contrast: 8,   grain: 4,      colorTemp: 10 }, // 1/3型とFZ45/55(1/2.3型)より小型のセンサー。複数レビューが「Kodak color science」「Kodachrome的な暖色」を強調、小型センサーゆえの粒状感も強め
 };
+
+// colorTemp/saturationはMICRO ADJUSTスライダーが存在しないため、
+// パッチ選択時だけ効く「見えないクイーク値」として別管理し、遺伝子ボタンを
+// 動かすと0にリセットする（MICRO ADJUSTと同じリセット原則）
+let patchColorTempQuirk = 0;
+let patchSaturationQuirk = 0;
 
 function applyPatchQuirk(patchKey) {
   const q = PATCH_QUIRKS[patchKey];
+  patchColorTempQuirk = 0;
+  patchSaturationQuirk = 0;
   if (!q) return;
-  if (q.contrast)  adjContrastSlider.value  = clamp(+adjContrastSlider.value  + q.contrast,  0, 100);
-  if (q.highlight) adjHighlightSlider.value = clamp(+adjHighlightSlider.value + q.highlight, 0, 100);
-  if (q.sharpness) adjSharpnessSlider.value = clamp(+adjSharpnessSlider.value + q.sharpness, 0, 100);
+  if (q.contrast)   adjContrastSlider.value  = clamp(+adjContrastSlider.value  + q.contrast,  0, 100);
+  if (q.highlight)  adjHighlightSlider.value = clamp(+adjHighlightSlider.value + q.highlight, 0, 100);
+  if (q.sharpness)  adjSharpnessSlider.value = clamp(+adjSharpnessSlider.value + q.sharpness, 0, 100);
   if (q.grain)      adjGrainSlider.value     = clamp(+adjGrainSlider.value     + q.grain,     0, 100);
+  if (q.colorTemp)  patchColorTempQuirk = q.colorTemp;
+  if (q.saturation) patchSaturationQuirk = q.saturation;
   refreshMicroAdjustLabels();
 }
 
