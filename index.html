@@ -148,8 +148,9 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 .profile-btn { border: 1px solid var(--line-strong); padding: 8px 8px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: all 0.12s; }
 .profile-btn:hover { border-color: var(--accent); }
 .profile-btn.active { background: var(--accent); border-color: var(--accent); }
-.profile-btn.active .profile-name, .profile-btn.active .profile-desc { color: #241d16; }
+.profile-btn.active .profile-name, .profile-btn.active .profile-inspired, .profile-btn.active .profile-desc { color: #241d16; }
 .profile-name { font: 600 10.5px/1.2 var(--sans); color: var(--ink); }
+.profile-inspired { font: 400 italic 8px/1.2 var(--sans); color: var(--muted); margin-top: 2px; opacity: 0.85; }
 .profile-desc { font: 400 8.5px/1.2 var(--sans); color: var(--muted); margin-top: 2px; }
 
 @media (max-width: 860px) {
@@ -177,6 +178,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
   .profile-grid { grid-template-columns: 1fr 1fr !important; }
   .profile-btn { padding: 13px 10px; }
   .profile-name { font-size: 13px; }
+  .profile-inspired { font-size: 9.5px; }
   .profile-desc { font-size: 10px; }
 }
 </style>
@@ -322,30 +324,30 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 
       <div class="form-group-label">01 DIGITAL ORIGIN — デジタルのはじまり</div>
       <div class="profile-grid" style="grid-template-columns: 1fr 1fr;">
-        <div class="profile-btn" data-patch="dc4800"><span class="profile-name">DC4800-inspired</span><span class="profile-desc">2000 / Standard Zoom</span></div>
-        <div class="profile-btn" data-patch="dx6490"><span class="profile-name">DX6490-inspired</span><span class="profile-desc">2003 / Superzoom</span></div>
-        <div class="profile-btn" data-patch="dx7590"><span class="profile-name">DX7590-inspired</span><span class="profile-desc">2004 / Superzoom</span></div>
-        <div class="profile-btn" data-patch="p880"><span class="profile-name">P880-inspired</span><span class="profile-desc">2005 / Natural</span></div>
+        <div class="profile-btn" data-patch="dc4800"><span class="profile-name">SR4800</span><span class="profile-inspired">DC4800-inspired</span><span class="profile-desc">2000 / Standard Zoom</span></div>
+        <div class="profile-btn" data-patch="dx6490"><span class="profile-name">SR6490</span><span class="profile-inspired">DX6490-inspired</span><span class="profile-desc">2003 / Superzoom</span></div>
+        <div class="profile-btn" data-patch="dx7590"><span class="profile-name">SR7590</span><span class="profile-inspired">DX7590-inspired</span><span class="profile-desc">2004 / Superzoom</span></div>
+        <div class="profile-btn" data-patch="p880"><span class="profile-name">SR880</span><span class="profile-inspired">P880-inspired</span><span class="profile-desc">2005 / Natural</span></div>
       </div>
 
       <div class="form-group-label">02 COMPACT / COLOR — コンパクトな色</div>
       <div class="profile-grid" style="grid-template-columns: 1fr 1fr;">
-        <div class="profile-btn" data-patch="ls753"><span class="profile-name">LS753-inspired</span><span class="profile-desc">2004 / Vivid</span></div>
-        <div class="profile-btn" data-patch="c875"><span class="profile-name">C875-inspired</span><span class="profile-desc">2006 / Vivid</span></div>
+        <div class="profile-btn" data-patch="ls753"><span class="profile-name">SR753</span><span class="profile-inspired">LS753-inspired</span><span class="profile-desc">2004 / Vivid</span></div>
+        <div class="profile-btn" data-patch="c875"><span class="profile-name">SR875</span><span class="profile-inspired">C875-inspired</span><span class="profile-desc">2006 / Vivid</span></div>
       </div>
 
       <div class="form-group-label">03 EXPERIMENTAL COMPACT — 実験的なコンパクト</div>
       <div class="profile-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-        <div class="profile-btn" data-patch="v570"><span class="profile-name">V570-inspired</span><span class="profile-desc">Dual-Lens</span></div>
-        <div class="profile-btn" data-patch="v610"><span class="profile-name">V610-inspired</span><span class="profile-desc">Dual-Lens</span></div>
-        <div class="profile-btn" data-patch="v705"><span class="profile-name">V705-inspired</span><span class="profile-desc">Dual-Lens</span></div>
+        <div class="profile-btn" data-patch="v570"><span class="profile-name">SR570</span><span class="profile-inspired">V570-inspired</span><span class="profile-desc">Dual-Lens</span></div>
+        <div class="profile-btn" data-patch="v610"><span class="profile-name">SR610</span><span class="profile-inspired">V610-inspired</span><span class="profile-desc">Dual-Lens</span></div>
+        <div class="profile-btn" data-patch="v705"><span class="profile-name">SR705</span><span class="profile-inspired">V705-inspired</span><span class="profile-desc">Dual-Lens</span></div>
       </div>
 
       <div class="form-group-label">04 PIXPRO / NOW — いまのKodak</div>
       <div class="profile-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-        <div class="profile-btn" data-patch="fz45"><span class="profile-name">FZ45-inspired</span><span class="profile-desc">BSI / Modern</span></div>
-        <div class="profile-btn" data-patch="fz55"><span class="profile-name">FZ55-inspired</span><span class="profile-desc">BSI / Modern</span></div>
-        <div class="profile-btn" data-patch="c1"><span class="profile-name">C1-inspired</span><span class="profile-desc">Fixed / Modern</span></div>
+        <div class="profile-btn" data-patch="fz45"><span class="profile-name">SR45</span><span class="profile-inspired">FZ45-inspired</span><span class="profile-desc">BSI / Modern</span></div>
+        <div class="profile-btn" data-patch="fz55"><span class="profile-name">SR55</span><span class="profile-inspired">FZ55-inspired</span><span class="profile-desc">BSI / Modern</span></div>
+        <div class="profile-btn" data-patch="c1"><span class="profile-name">SRC1</span><span class="profile-inspired">C1-inspired</span><span class="profile-desc">Fixed / Modern</span></div>
       </div>
 
       <!-- ③ フッター（シリーズ標準：SAVE AS PNG＋RESET／PHILOSOPHY・USAGE・LICENSE／ALL FILTERS） -->
