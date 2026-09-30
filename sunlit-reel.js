@@ -57,7 +57,7 @@ const OPTICS_DELTA = [
 const COLOR_DELTA = [
   { saturation: 35, contrast: 18, colorTemp: 3   }, // VIVID
   { saturation: 25, contrast: 8,  colorTemp: 14  }, // KODAK COLOR CLASSIC
-  { saturation: -8, contrast: 0,  colorTemp: 0   }, // NATURAL
+  { saturation: -4, contrast: 0,  colorTemp: 0   }, // NATURAL
   { saturation: 10, contrast: 14, colorTemp: -6  }, // MODERN
 ];
 const PROCESSING_DELTA = [
